@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>GlowFlow — Face & Hair Routine Manager (Single‑File + Login/Profil + Netlify Badge)</title>
+<style>
+:root{--bg:#0f1220;--bg-soft:#131731;--card:#171b38;--muted:#8ea0ff;--text:#eaf0ff;--ok:#29c466;--warn:#ffbf47;--bad:#ff5b6e;--chip:#222651;--chip2:#2a2e63;--accent1:#7c8cff;--accent2:#9d76ff;--shadow:0 8px 30px rgba(0,0,0,.45)}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:
+  radial-gradient(1200px 800px at 10% -10%,rgba(124,140,255,.15),transparent 60%),
+  radial-gradient(1000px 600px at 110% 0,rgba(157,118,255,.12),transparent 60%),
+  linear-gradient(180deg,#0d1020 0%,#0f1220 60%,#0f1220 100%);color:var(--text);font:500 15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif}
+button,a{cursor:pointer}
+a{color:var(--muted)}
+header{position:sticky;top:0;background:linear-gradient(180deg,rgba(15,18,32,.9),rgba(15,18,32,.7));backdrop-filter:blur(10px);z-index:5}
+.header-wrap{max-width:1200px;margin:0 auto;display:flex;gap:16px;align-items:center;justify-content:space-between;padding:14px 16px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:36px;height:36px;border-radius:10px;background:conic-gradient(from 200deg,var(--accent1),var(--accent2));box-shadow:var(--shadow)}
+h1{font-size:18px;margin:0}
+.claim{opacity:.75;font-size:12px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{border:0;border-radius:999px;padding:8px 12px;background:var(--chip);color:#e8ecff}
+.tab[aria-selected="true"]{background:linear-gradient(90deg,var(--accent1),var(--accent2))}
+.container{max-width:1200px;margin:18px auto;padding:0 16px;display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:980px){.container{grid-template-columns:330px 1fr 360px}}
+.card{background:linear-gradient(180deg,var(--card),#121633);border:1px solid #222752;border-radius:18px;padding:14px;box-shadow:var(--shadow)}
+section h2{font-size:16px;margin:0 0 8px}
+hr.sep{border:0;height:1px;background:linear-gradient(90deg,transparent,#27306b,transparent);margin:12px 0}
+.form-row{display:grid;grid-template-columns:1fr;gap:10px;margin:8px 0}
+.form-row.two{grid-template-columns:1fr 1fr}
+label{font-size:12px;opacity:.85}
+input,select,textarea{width:100%;margin-top:6px;background:#0e1230;border:1px solid #2a316f;border-radius:12px;color:var(--text);padding:10px 12px}
+textarea{min-height:64px;resize:vertical}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;border:1px solid #2a316f;background:#141a3f;color:var(--text)}
+.btn.primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));border:0}
+.btn.ghost{background:transparent;border-color:#2b336f}
+.btn.warn{background:#3b2a00;border-color:#6b5200}
+.btn.danger{background:#3a0f18;border-color:#6b2031}
+.btn.small{padding:6px 8px;border-radius:10px;font-size:12px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.list{display:grid;gap:10px}
+.item{display:grid;gap:8px;padding:12px;border-radius:14px;background:linear-gradient(180deg,#14183a,#0d1130);border:1px solid #242b65}
+.item-head{display:flex;justify-content:space-between;gap:8px}
+.item-title{font-weight:600}
+.item-sub{opacity:.8;font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:11px;padding:6px 8px;border-radius:999px;background:var(--chip);border:1px solid #2a2f6a}
+.chip.good{background:#153a2a;border-color:#1f694c}
+.chip.warn{background:#3a2e15;border-color:#6b5200}
+.chip.bad{background:#3a161b;border-color:#6b2430}
+.right h3{margin:0 0 6px}
+.steps{display:grid;gap:10px;counter-reset:step}
+.step{position:relative;padding:12px;border-radius:14px;background:linear-gradient(180deg,#14183a,#0e1232);border:1px solid #242b65}
+.step::before{counter-increment:step;content:counter(step);position:absolute;inset:10px auto auto 10px;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#0b0f25;font-weight:700}
+.step-head{display:flex;align-items:center;gap:8px;margin-left:34px;justify-content:space-between}
+.step-title{font-weight:700}
+.step-sub{opacity:.8;font-size:12px;margin-left:34px}
+.kbd{padding:.2em .5em;border:1px solid #34408b;border-radius:6px;background:#0a0d22;font-size:12px}
+.warnbox{border:1px dashed #6b5200;background:rgba(255,191,71,.08);border-radius:14px;padding:10px;font-size:13px}
+.controls{display:flex;flex-wrap:wrap;gap:6px}
+.timer{font-size:12px}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#0b0e22;border:1px solid #2a316f;border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);z-index:30}
+.hidden{display:none}
+.badge{padding:3px 7px;border-radius:999px;font-size:11px;background:#23306a;border:1px solid #2c3780}
+.badge.ok{background:#133725;border-color:#1f694c}
+.badge.soon{background:#3a2e15;border-color:#6b5200}
+.badge.expired{background:#3a161b;border-color:#6b2430}
+.note{opacity:.8;font-size:12px}
+footer{opacity:.65;text-align:center;font-size:12px;padding:16px}
+.switch{display:inline-grid;grid-auto-flow:column;gap:8px;align-items:center}
+.switch input{appearance:none;width:34px;height:20px;border-radius:999px;background:#1a2048;position:relative;outline:0;border:1px solid #2b3370}
+.switch input:checked{background:linear-gradient(90deg,var(--accent1),var(--accent2))}
+.switch input::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:all .2s}
+.switch input:checked::after{left:18px}
+header .util{display:flex;gap:8px;align-items:center}
+.smalltext{font-size:12px;opacity:.8}
+.avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;border:1px solid #2a316f}
+.menu{position:relative}
+.menu button{border:1px solid #2a316f;background:#141a3f;color:var(--text);border-radius:10px;padding:6px 10px}
+.menu-list{position:absolute;right:0;top:40px;min-width:220px;background:#0f1331;border:1px solid #2a316f;border-radius:12px;box-shadow:var(--shadow);padding:6px;display:none;z-index:10}
+.menu[aria-expanded="true"] .menu-list{display:block}
+.menu-item{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px}
+.menu-item:hover{background:#12183f}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,8,20,.55);backdrop-filter:blur(6px);z-index:50}
+.modal[open]{display:flex}
+.modal-card{width:min(520px,92vw);background:linear-gradient(180deg,#171b38,#101437);border:1px solid #26306c;border-radius:16px;padding:14px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.modal-tabs{display:flex;gap:8px;margin-bottom:10px}
+.modal-tabs button[aria-selected="true"]{background:linear-gradient(90deg,var(--accent1),var(--accent2));border:0}
+.close-x{background:transparent;border:1px solid #2a316f;border-radius:10px;padding:6px 10px}
+.helper{font-size:12px;opacity:.8}
+.block{display:block;width:100%}
+.center{text-align:center}
+.disabled{opacity:.5;pointer-events:none}
+.gate{max-width:900px;margin:30px auto;padding:12px;border:1px dashed #33408a;border-radius:14px;background:rgba(124,140,255,.06)}
+.badgelite{padding:3px 6px;border:1px solid #2a2f6a;border-radius:8px;font-size:11px;background:#1a1f49}
+.badge-netlify img{height:20px;border-radius:6px;border:0;vertical-align:middle}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-wrap" role="banner">
+    <div class="brand" aria-label="GlowFlow">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>GlowFlow</h1>
+        <div class="claim">Deine smarte Face & Hair Routine – sortiert, erklärt, erinnert ✨</div>
+      </div>
+    </div>
+    <div class="util" id="utilBar">
+      <a class="badge-netlify" href="https://app.netlify.com/sites/glowflo/deploys" target="_blank" rel="noopener" title="Netlify Deploy Status">
+        <img src="https://api.netlify.com/api/v1/badges/96804cef-919c-4fb9-826d-a541f1ab2ff6/deploy-status" alt="Netlify Status">
+      </a>
+      <div class="switch" title="Benachrichtigungen aktivieren">
+        <span class="smalltext">Notifs</span>
+        <input id="notifToggle" type="checkbox" aria-label="Browser-Benachrichtigungen aktivieren">
+      </div>
+      <button class="tab btn small" id="exportICSBtn" title="ICS exportieren">ICS Export</button>
+      <button class="tab btn small" id="exportBtn" title="Export JSON">Export</button>
+      <button class="tab btn small" id="importBtn" title="Import JSON">Import</button>
+      <input id="importFile" type="file" accept="application/json" class="hidden" aria-hidden="true">
+      <button class="tab btn small" id="resetBtn" title="Alles zurücksetzen">Reset</button>
+      <div class="menu" id="profileMenu" aria-haspopup="true" aria-expanded="false">
+        <button id="profileBtn" aria-label="Profil öffnen"><span id="avatar" class="avatar" aria-hidden="true">—</span></button>
+        <div class="menu-list" role="menu" aria-label="Profilmenu">
+          <div class="menu-item" role="menuitem" id="menuProfile">
+            <div id="menuAvatar" class="avatar" style="width:28px;height:28px">—</div>
+            <div>
+              <div id="menuName" style="font-weight:700">—</div>
+              <div id="menuEmail" class="smalltext">—</div>
+            </div>
+          </div>
+          <hr class="sep"/>
+          <button class="menu-item btn block" id="openProfile">Profil & Konto</button>
+          <button class="menu-item btn block" id="openServerless">Netlify‑Code exportieren</button>
+          <button class="menu-item btn block" id="logoutBtn">Abmelden</button>
+        </div>
+      </div>
+      <button class="tab btn small" id="loginOpenBtn" title="Einloggen">Login</button>
+    </div>
+  </div>
+  <div class="header-wrap" role="tablist" aria-label="Modus wählen">
+    <div class="tabs">
+      <button class="tab" role="tab" data-mode="face_am" aria-selected="true">Face AM ☀️</button>
+      <button class="tab" role="tab" data-mode="face_pm" aria-selected="false">Face PM 🌙</button>
+      <button class="tab" role="tab" data-mode="hair_wash" aria-selected="false">Hair Wash 🚿</button>
+      <button class="tab" role="tab" data-mode="hair_style" aria-selected="false">Hair Style 💨</button>
+    </div>
+    <div class="smalltext">Hinweis: SPF nur morgens • Retinoids nicht mit AHA/BHA am selben Abend</div>
+  </div>
+</header>
+
+<main class="container" id="appMain" aria-live="polite">
+  <section class="card" aria-labelledby="formTitle">
+    <h2 id="formTitle">Produkt hinzufügen / bearbeiten</h2>
+    <form id="productForm" autocomplete="off">
+      <input type="hidden" id="pid">
+      <div class="form-row"><div><label for="brand">Marke</label><input id="brand" placeholder="z. B. CeraVe"></div></div>
+      <div class="form-row"><div><label for="name">Name <span class="badge">Pflicht</span></label><input id="name" required placeholder="z. B. Hydrating Cleanser"></div></div>
+      <div class="form-row"><div><label for="ptype">Freitext-Typ</label><input id="ptype" placeholder="z. B. cleanser, serum, spf, shampoo…"></div></div>
+      <div class="form-row two">
+        <div><label for="area">Bereich</label><select id="area"><option value="auto">Auto erkennen</option><option value="face">Face</option><option value="hair">Hair</option></select></div>
+        <div><label for="freq">Frequenz</label><select id="freq"><option value="daily">täglich</option><option value="2-3x">2–3×/Woche</option><option value="weekly">wöchentlich</option><option value="as_needed">nach Bedarf</option></select></div>
+      </div>
+      <div class="form-row"><div><label for="note">Notiz</label><textarea id="note" placeholder="z. B. nur abends, bei Irritation reduzieren…"></textarea></div></div>
+      <div class="form-row two">
+        <div><label for="opened_at">Öffnungsdatum</label><input id="opened_at" type="date"></div>
+        <div><label for="pao_months">PAO (Monate)</label><input id="pao_months" type="number" min="0" inputmode="numeric" placeholder="z. B. 12"></div>
+      </div>
+      <div class="actions"><button class="btn primary" id="saveBtn" type="submit">Speichern</button><button class="btn ghost" id="clearBtn" type="button">Neu</button></div>
+    </form>
+    <hr class="sep"><div class="note">Single‑File App. Optionaler Netlify‑Code ist in dieser Datei eingebettet und kann exportiert werden (Menü → Netlify‑Code exportieren).</div>
+  </section>
+
+  <section class="card" aria-labelledby="listTitle">
+    <h2 id="listTitle">Produkte</h2>
+    <div id="productList" class="list" role="list"></div>
+  </section>
+
+  <aside class="card right" aria-labelledby="routineTitle">
+    <h2 id="routineTitle">Schritt-für-Schritt</h2>
+    <div id="conflictBox" class="warnbox hidden" role="alert"></div>
+    <div id="routineSteps" class="steps" role="list"></div>
+    <hr class="sep"><div class="note">Checkboxen sind visuell. Timer helfen dir z. B. beim Cleanser (30–60 Sek.).</div>
+  </aside>
+</main>
+
+<section id="gate" class="gate hidden" aria-live="polite"></section>
+<footer>Local first • Kein Tracking • Alles in einer Datei (localStorage). Optional: embedded Netlify Function Code → als Files exportieren.</footer>
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+<!-- Login / Register Modal -->
+<dialog class="modal" id="authModal" aria-labelledby="authTitle" aria-modal="true">
+  <div class="modal-card" role="document">
+    <div class="modal-head"><h2 id="authTitle">Willkommen bei GlowFlow</h2><button class="close-x" id="authClose" aria-label="Schließen">✕</button></div>
+    <div class="modal-tabs" role="tablist" aria-label="Auth Tabs"><button class="btn" id="tabLogin" role="tab" aria-selected="true">Login</button><button class="btn" id="tabRegister" role="tab" aria-selected="false">Registrieren</button></div>
+    <form id="loginForm" autocomplete="off">
+      <div class="form-row"><div><label for="loginEmail">E-Mail</label><input id="loginEmail" type="email" required placeholder="you@example.com" autocomplete="username"></div></div>
+      <div class="form-row"><div><label for="loginPass">Passwort</label><input id="loginPass" type="password" required placeholder="••••••" autocomplete="current-password"></div></div>
+      <div class="actions"><button class="btn primary" type="submit">Einloggen</button><button class="btn ghost" type="button" id="guestBtn">Schnellstart (Gast)</button></div>
+      <div class="helper">Offline‑App: Daten bleiben lokal. (Optionalen Netlify‑Code kannst du aus dieser Datei exportieren.)</div>
+    </form>
+    <form id="regForm" class="hidden" autocomplete="off">
+      <div class="form-row"><div><label for="regName">Anzeigename</label><input id="regName" required placeholder="z. B. Alex"></div></div>
+      <div class="form-row"><div><label for="regEmail">E-Mail</label><input id="regEmail" type="email" required placeholder="you@example.com" autocomplete="username"></div></div>
+      <div class="form-row two"><div><label for="regPass">Passwort</label><input id="regPass" type="password" required minlength="6" autocomplete="new-password"></div><div><label for="regPass2">Passwort wiederholen</label><input id="regPass2" type="password" required minlength="6" autocomplete="new-password"></div></div>
+      <div class="actions"><button class="btn primary" type="submit">Konto erstellen</button></div>
+    </form>
+  </div>
+</dialog>
+
+<!-- Profile Modal -->
+<dialog class="modal" id="profileModal" aria-labelledby="profileTitle" aria-modal="true">
+  <div class="modal-card" role="document">
+    <div class="modal-head"><h2 id="profileTitle">Profil & Konto</h2><button class="close-x" id="profileClose" aria-label="Schließen">✕</button></div>
+    <form id="profileForm" autocomplete="off">
+      <div class="form-row two"><div><label for="profName">Anzeigename</label><input id="profName" required></div><div><label for="profEmail">E-Mail</label><input id="profEmail" type="email" required></div></div>
+      <div class="form-row two"><div><label for="profSkin">Skin/Hair Notizen</label><input id="profSkin" placeholder="z. B. SPF immer, trockene Haut…"></div><div><label for="profNotif">Benachrichtigungen</label><div class="switch"><span class="smalltext">aktiv</span><input id="profNotif" type="checkbox" aria-label="Benachrichtigungen aktiv"></div></div></div>
+      <h3 style="margin:8px 0">Cloud Sync (Netlify)</h3>
+      <div class="actions">
+        <button class="btn" id="cloudPull">Cloud Pull</button>
+        <button class="btn" id="cloudPush">Cloud Push</button>
+        <button class="btn danger" id="cloudWipe">Cloud Wipe</button>
+      </div>
+      <hr class="sep"/>
+      <h3 style="margin:8px 0">Passwort ändern</h3>
+      <div class="form-row two"><div><label for="profNewPass">Neues Passwort</label><input id="profNewPass" type="password" minlength="6" placeholder="leer lassen, um nicht zu ändern"></div><div><label for="profNewPass2">Wiederholen</label><input id="profNewPass2" type="password" minlength="6"></div></div>
+      <div class="actions"><button class="btn primary" type="submit">Speichern</button></div>
+      <div class="helper">Cloud‑Datenbank benötigt Netlify Function (Code ist in dieser Datei ⇒ Export im Profilmenü).</div>
+    </form>
+  </div>
+</dialog>
+
+<!-- Netlify Serverless Code & netlify.toml eingebettet (als Text) -->
+<script type="text/plain" id="netlify-function-glowflow.mjs">
+import { neon } from '@netlify/neon';
+const sql = neon(); // automatically uses env NETLIFY_DATABASE_URL
+
+// Beispielabfrage aus deiner Vorgabe:
+// const [post] = await sql`SELECT * FROM posts WHERE id = ${postId}`;
+
+async function ensureSchema(){
+  await sql`create table if not exists glowflow_products (
+    id text primary key,
+    user_email text not null,
+    data jsonb not null,
+    updated_at timestamptz default now()
+  );`;
+  await sql`create index if not exists idx_gf_email on glowflow_products (user_email);`;
+}
+
+const json = (status, data) => ({
+  statusCode: status,
+  headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
+  body: JSON.stringify(data),
+});
+
+export const handler = async (event) => {
+  try {
+    await ensureSchema();
+    if (event.httpMethod === 'GET') {
+      const { email } = event.queryStringParameters || {};
+      if (!email) return json(400, { error: 'email required' });
+      const rows = await sql`select id, data, updated_at from glowflow_products where user_email = ${email} order by updated_at desc`;
+      return json(200, { products: rows.map(r => r.data) });
+    }
+    if (event.httpMethod === 'POST') {
+      const { email, products } = JSON.parse(event.body || '{}');
+      if (!email) return json(400, { error: 'email required' });
+      if (!Array.isArray(products)) return json(400, { error: 'products array required' });
+      const now = new Date().toISOString();
+      for (const p of products) {
+        const id = String(p.id || (globalThis.crypto?.randomUUID?.() || `p_${Date.now()}_${Math.random().toString(36).slice(2)}`));
+        p.id = id;
+        await sql`insert into glowflow_products (id, user_email, data, updated_at)
+                  values (${id}, ${email}, ${sql.json(p)}, ${now})
+                  on conflict (id) do update set data = excluded.data, updated_at = excluded.updated_at`;
+      }
+      return json(200, { ok: true, count: products.length });
+    }
+    if (event.httpMethod === 'DELETE') {
+      const { email } = JSON.parse(event.body || '{}');
+      if (!email) return json(400, { error: 'email required' });
+      await sql`delete from glowflow_products where user_email = ${email}`;
+      return json(200, { ok: true });
+    }
+    return json(405, { error: 'method not allowed' });
+  } catch (e) {
+    return json(500, { error: e.message });
+  }
+};
+</script>
+
+$1
+
+<!-- Vercel config (zum Export) -->
+<!-- Serverless Export Modal -->
+<dialog class="modal" id="srvModal" aria-labelledby="srvTitle" aria-modal="true">
+  <div class="modal-card" role="document">
+    <div class="modal-head"><h2 id="srvTitle">Netlify‑Dateien exportieren</h2><button class="close-x" id="srvClose" aria-label="Schließen">✕</button></div>
+    <p class="helper">Alles ist in <span class="badgelite">index.html</span> eingebettet. Mit den Buttons unten lädst du die Server‑Files herunter und legst sie ins Repo:</p>
+    <div class="actions">
+      <button class="btn" id="dlFunction">glowflow.mjs speichern</button>
+      <button class="btn" id="dlToml">netlify.toml speichern</button>
+    </div>
+    <p class="helper">Pfadstruktur im Repo:
+      <code>netlify/functions/glowflow.mjs</code> und <code>netlify.toml</code> (für Netlify)
+      <br/>
+      <code>api/glowflow.mjs</code> und <code>vercel.json</code> (für Vercel). Danach deployen und die passende DB‑Env setzen: <code>NETLIFY_DATABASE_URL</code> (Netlify) bzw. <code>DATABASE_URL</code> (Vercel/Neon).
+    </p>
+  </div>
+</dialog>
+
+<script>
+(()=>{"use strict";
+/* ===== Utilities ===== */
+const qs=(s,el=document)=>el.querySelector(s);
+const qsa=(s,el=document)=>[...el.querySelectorAll(s)];
+const uid=()=>('u'+Math.random().toString(36).slice(2)+Date.now().toString(36));
+const pid=()=>('p'+Math.random().toString(36).slice(2)+Date.now().toString(36));
+const todayISO=()=>new Date().toISOString().slice(0,10);
+const fmtDate=(d)=>!d?'—':new Date(d).toLocaleDateString();
+const daysBetween=(a,b)=>Math.floor((new Date(b)-new Date(a))/(1000*60*60*24));
+const addMonths=(date,months)=>{const d=new Date(date);const day=d.getDate();d.setMonth(d.getMonth()+months);if(d.getDate()<day){d.setDate(0)}return d};
+const toast=(msg)=>{const t=qs('#toast');t.textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2200)};
+const escapeHTML=str=> (str??'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
+const hex = buffer => [...new Uint8Array(buffer)].map(b=>b.toString(16).padStart(2,'0')).join('');
+const sha256 = async (text)=> hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)));
+const rndColor=()=>`hsl(${Math.floor(Math.random()*360)} 70% 55%)`;
+
+/* ===== Mappings ===== */
+const FACE=[
+ {key:'makeup_remover',label:'Makeup Remover',kw:['makeup remover','abschmink','mizellen','cleansing balm','oil cleanser'],pr:5,tip:'Sanft massieren, vor Cleanser.'},
+ {key:'cleanser',label:'Cleanser',kw:['cleanser','reiniger','wash','gelreiniger','schaum','reinigung'],pr:10,tip:'30–60 Sek. mit lauwarmem Wasser.'},
+ {key:'exfoliant',label:'Exfoliant',kw:['exfol','peel','aha','bha','pha','salicyl','salicylic','glycol','lactic'],pr:30,tip:'2–3×/Woche, nicht mit Retinoids kombinieren.'},
+ {key:'mask',label:'Maske',kw:['mask','maske','clay','tonerde'],pr:35,tip:'1–2×/Woche nach Cleanser.'},
+ {key:'toner',label:'Toner',kw:['toner','gesichtswasser'],pr:40,tip:'Sanft einklopfen.'},
+ {key:'essence',label:'Essence',kw:['essence'],pr:45,tip:'Vor Seren auftragen.'},
+ {key:'serum',label:'Serum',kw:['serum','ampoule','ampulle'],pr:50,tip:'Von dünn → dick schichten.'},
+ {key:'spot',label:'Spot Treatment',kw:['spot','aknegel','acne','benzoyl'],pr:53,tip:'Nur punktuell anwenden.'},
+ {key:'eye',label:'Eye',kw:['eye','augencreme'],pr:55,tip:'Reiskorngroß, sanft einklopfen.'},
+ {key:'retinoid',label:'Retinoid',kw:['retinol','retinoid','adapalen','tretinoin'],pr:58,tip:'Nur PM, langsam einschleichen.'},
+ {key:'moist',label:'Moisturizer',kw:['moist','creme','lotion','gel cream','gel-cream'],pr:60,tip:'Versiegelt die vorherigen Steps.'},
+ {key:'oil',label:'Face Oil',kw:['face oil','gesichtsöl','squalan','squalane'],pr:65,tip:'2–3 Tropfen als letzter Step (ohne SPF).'},
+ {key:'spf',label:'SPF',kw:['spf','sunscreen','sonnencreme','uv','lichtschutz'],pr:70,tip:'2-Finger-Regel, alle 2–3 Std. nachlegen.'}
+];
+const HAIR=[
+ {key:'scalp',label:'Scalp Scrub',kw:['scalp','kopfhaut peeling','scrub'],pr:8,tip:'Vor der Wäsche sanft massieren.'},
+ {key:'prepoo',label:'Pre-Poo',kw:['pre poo','prewash','ölkur','pre-wash'],pr:9,tip:'10–20 Min. einwirken lassen.'},
+ {key:'shampoo',label:'Shampoo',kw:['shampoo','co-wash','cowash'],pr:10,tip:'Kopfhaut 2× shampoonieren.'},
+ {key:'purple',label:'Purple/Blue Shampoo',kw:['purple shampoo','silver','blau','blue shampoo'],pr:11,tip:'1–3 Min. einwirken (nur bei Bedarf).'},
+ {key:'cond',label:'Conditioner',kw:['conditioner','spülung'],pr:20,tip:'Nur Längen & Spitzen.'},
+ {key:'mask',label:'Maske/Kur',kw:['mask','kur','deep conditioner'],pr:25,tip:'1–2×/Woche, 5–10 Min.'},
+ {key:'leavein',label:'Leave-In',kw:['leave-in','leave in','milch'],pr:30,tip:'Ins handtuchtrockene Haar geben.'},
+ {key:'heat',label:'Heat Protectant',kw:['heat protect','hitzeschutz'],pr:40,tip:'Vor Föhnen/Glätten.'},
+ {key:'style',label:'Styling',kw:['styling','cream','mousse','gel','wax','pomade','curl'],pr:45,tip:'Nach Bedarf formen.'},
+ {key:'oil',label:'Finish Oil/Serum',kw:['finish oil','serum','gloss'],pr:50,tip:'1–2 Tropfen in die Spitzen.'}
+];
+const CUSTOM={key:'custom',label:'Custom',pr:999,tip:'Nutze nach Bedarf.'};
+const SERUM_VISCOSITY=[{kw:['essence','water','hyal','niacinamide','zinc','light'],score:0},{kw:['vitamin c','azelaic','alpha arbutin','kojic','bakuchiol'],score:1},{kw:['peptide','ceramide','ampoule','rich','repair'],score:2}];
+const DURATION_SEC={cleanser:60, mask:300, exfoliant:60, toner:10, essence:10, serum:20, spot:10, eye:10, retinoid:15, moist:15, oil:10, shampoo:90, purple:90, cond:90, leavein:10, heat:5, style:10, scalp:60, prepoo:900};
+const MODE_ORDER={face_am:['makeup_remover','cleanser','exfoliant','mask','toner','essence','serum','spot','eye','moist','oil','spf'],face_pm:['makeup_remover','cleanser','exfoliant','mask','toner','essence','serum','spot','retinoid','eye','moist','oil'],hair_wash:['scalp','prepoo','shampoo','purple','mask','cond'],hair_style:['leavein','heat','style','oil']};
+
+/* ===== Storage (multi-user) ===== */
+const STORE_KEY='glowflow_v4';
+const VERSION='4.0.0';
+let store={version:VERSION,currentUserId:null,mode:'face_am',users:{}};
+const save=()=>localStorage.setItem(STORE_KEY,JSON.stringify(store));
+const load=()=>{try{const raw=localStorage.getItem(STORE_KEY);if(raw){store={...store,...JSON.parse(raw)}}else{const uid0=uid();store.users[uid0]={profile:{name:'Demo',email:'demo@local',created_at:new Date().toISOString(),avatarColor:rndColor(),notes:'',notifEnabled:false},auth:{salt:'',hash:''},products:seed()};store.currentUserId=uid0;save()}}catch(e){console.error(e)}};
+const getUser=()=>store.users[store.currentUserId]||null;
+const findUserByEmail=(email)=>Object.entries(store.users).find(([id,u])=>u.profile.email.toLowerCase()===email.toLowerCase());
+
+/* ===== Seed ===== */
+function seed(){return[
+ {id:pid(),brand:'Bioderma',name:'Sensibio H2O',ptype:'makeup remover',area:'auto',freq:'as_needed',note:'Wenn Makeup',opened_at:todayISO(),pao_months:12},
+ {id:pid(),brand:'CeraVe',name:'Hydrating Cleanser',ptype:'cleanser',area:'auto',freq:'daily',note:'Mild',opened_at:todayISO(),pao_months:12},
+ {id:pid(),brand:'COSRX',name:'BHA Blackhead Power',ptype:'bha exfoliant',area:'auto',freq:'2-3x',note:'Nicht mit Retinoid',pao_months:12},
+ {id:pid(),brand:'Geek & Gorgeous',name:'B-Bomb Niacinamide Serum',ptype:'serum',area:'auto',freq:'daily',note:'Dünn',pao_months:12},
+ {id:pid(),brand:'The Ordinary',name:'Granactive Retinoid 2% Emulsion',ptype:'retinoid',area:'auto',freq:'2-3x',note:'PM',pao_months:6},
+ {id:pid(),brand:'Beauty of Joseon',name:'Relief Sun SPF50',ptype:'spf sunscreen',area:'auto',freq:'daily',note:'AM',pao_months:12},
+ {id:pid(),brand:'Kérastase',name:'Bain Lumière',ptype:'shampoo',area:'auto',freq:'as_needed',pao_months:12},
+ {id:pid(),brand:'Olaplex',name:'No.8 Bond Intense Mask',ptype:'mask',area:'auto',freq:'weekly',pao_months:12}
+]}
+
+/* ===== Auth (lokal) ===== */
+const createUser=async(name,email,password)=>{ if(findUserByEmail(email)) throw new Error('E-Mail bereits registriert'); const salt=uid(); const hash=await sha256(email+':'+password+':'+salt); const id=uid(); store.users[id]={profile:{name,email,created_at:new Date().toISOString(),avatarColor:rndColor(),notes:'',notifEnabled:false},auth:{salt,hash},products:[]}; store.currentUserId=id; save(); };
+const login=async(email,password)=>{ const pair=findUserByEmail(email); if(!pair) throw new Error('Unbekannte E-Mail'); const [id,user]=pair; const calc=await sha256(email+':'+password+':'+user.auth.salt); if(calc!==user.auth.hash) throw new Error('Falsches Passwort'); store.currentUserId=id; save(); };
+const logout=()=>{store.currentUserId=null; save(); gateLoggedOut(); openAuth('login')};
+const guestLogin=()=>{const id=uid(); store.users[id]={profile:{name:'Gast',email:`guest-${Math.random().toString(36).slice(2)}@local`,created_at:new Date().toISOString(),avatarColor:rndColor(),notes:'',notifEnabled:false},auth:{salt:'',hash:''},products:seed()}; store.currentUserId=id; save();}
+
+/* ===== Match/Inference ===== */
+const textOf=p=>[p.brand,p.name,p.ptype].filter(Boolean).join(' ').toLowerCase();
+const matchFrom=(arr,txt)=>arr.find(m=>m.kw.some(k=>txt.includes(k)))||null;
+const inferArea=p=>{ if(p.area&&p.area!=='auto') return p.area; const txt=textOf(p); return matchFrom(HAIR,txt)?'hair':'face' };
+const inferKey=p=>{ const area=inferArea(p); const txt=textOf(p); let m= area==='hair'?matchFrom(HAIR,txt):matchFrom(FACE,txt); if(!m) m=matchFrom(area==='hair'?FACE:HAIR,txt); return m?m.key:'custom' };
+const metaOf=key=> FACE.find(x=>x.key===key)||HAIR.find(x=>x.key===key)||CUSTOM;
+const serumViscScore=p=>{const txt=textOf(p); for(const tier of SERUM_VISCOSITY){ if(tier.kw.some(k=>txt.includes(k))) return tier.score } return 1 };
+const ALLOW_IN_MODE=(mode,key)=>{ if(mode==='face_am'){ if(key==='retinoid') return false; if(key==='spf') return true; return FACE.some(x=>x.key===key) && key!=='retinoid' } if(mode==='face_pm'){ if(key==='spf') return false; return FACE.some(x=>x.key===key) } if(mode==='hair_wash'){ return ['scalp','prepoo','shampoo','purple','mask','cond'].includes(key) } if(mode==='hair_style'){ return ['leavein','heat','style','oil'].includes(key) } return true };
+const paoInfo=p=>{ if(!p.opened_at || !p.pao_months) return null; const due=addMonths(p.opened_at,Number(p.pao_months)); const daysLeft=Math.ceil((due-new Date())/(1000*60*60*24)); const status=daysLeft<0?'expired':(daysLeft<=14?'soon':'ok'); return {due,daysLeft,status} };
+
+/* ===== Notifs & ICS ===== */
+let notifTimers=[]; const clearNotif=()=>{notifTimers.forEach(t=>clearTimeout(t));notifTimers=[]};
+const nextAtHour=(hour=9,daysOffset=0)=>{const now=new Date();const d=new Date();d.setHours(hour,0,0,0); if(d<=now) d.setDate(d.getDate()+1); d.setDate(d.getDate()+daysOffset); return d};
+const scheduleNotifs=()=>{ clearNotif(); if(!('Notification' in window)) return; if(Notification.permission!=='granted') return; const u=getUser(); if(!u) return; for(const p of u.products){ let freq=p.freq||'daily'; if(freq==='as_needed') continue; let when; if(freq==='daily'){ when=nextAtHour(9) } else if(freq==='weekly'){ when=nextAtHour(9); when.setDate(when.getDate() + (7 - when.getDay())) } else if(freq==='2-3x'){ when=nextAtHour(9,2) } const delay=when-new Date(); const t=setTimeout(()=>{ new Notification('GlowFlow: Erinnerung',{body:`${p.name} jetzt verwenden (${metaOf(p.key).label})`}); scheduleNotifs() }, Math.max(1000,delay)); notifTimers.push(t) }};
+const pad=n=>String(n).padStart(2,'0'); const icsDateTime=d=>{const dt=new Date(d);const y=dt.getFullYear();const m=pad(dt.getMonth()+1);const day=pad(dt.getDate());const h=pad(dt.getHours());const mi=pad(dt.getMinutes());const s=pad(dt.getSeconds());return `${y}${m}${day}T${h}${mi}${s}`};
+const icsBlob=()=>{ const u=getUser(); const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//GlowFlow//DE']; const now=icsDateTime(new Date()); const freqToRRULE=f=>f==='daily'?'FREQ=DAILY':(f==='weekly'?'FREQ=WEEKLY':(f==='2-3x'?'FREQ=WEEKLY;BYDAY=MO,TH':'')); for(const p of (u?u.products:[])){ const pi=paoInfo(p); if(pi){ const dt=new Date(pi.due); dt.setHours(9,0,0,0); lines.push('BEGIN:VEVENT'); lines.push(`UID:${p.id}-pao@glowflow`); lines.push(`DTSTAMP:${now}`); lines.push(`DTSTART:${icsDateTime(dt)}`); lines.push(`SUMMARY:PAO: ${p.name} (${p.pao_months}M) – prüfen/ersetzen`); lines.push('DESCRIPTION:GlowFlow PAO-Erinnerung'); lines.push('END:VEVENT'); } const rr=freqToRRULE(p.freq||'daily'); if(rr){ const start=nextAtHour(9); lines.push('BEGIN:VEVENT'); lines.push(`UID:${p.id}-rtn@glowflow`); lines.push(`DTSTAMP:${now}`); lines.push(`DTSTART:${icsDateTime(start)}`); lines.push(`RRULE:${rr}`); lines.push(`SUMMARY:Routine: ${p.name} (${metaOf(p.key).label})`); lines.push('DESCRIPTION:GlowFlow Routine-Erinnerung'); lines.push('END:VEVENT'); } } lines.push('END:VCALENDAR'); return new Blob([lines.join('\r\n')],{type:'text/calendar'}) };
+const download=(blob,filename)=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},0)};
+
+/* ===== UI refs ===== */
+const listEl=qs('#productList'); const routineEl=qs('#routineSteps'); const conflictEl=qs('#conflictBox');
+const utilBar=qs('#utilBar'); const loginOpenBtn=qs('#loginOpenBtn'); const profileMenu=qs('#profileMenu');
+const avatarEl=qs('#avatar'); const menuAvatar=qs('#menuAvatar'); const menuName=qs('#menuName'); const menuEmail=qs('#menuEmail');
+const notifToggle=qs('#notifToggle');
+
+/* ===== Render list ===== */
+const renderList=()=>{ listEl.innerHTML=''; const u=getUser(); if(!u){ listEl.innerHTML='<div class="note">Bitte einloggen.</div>'; return } const products=u.products; if(!products.length){ listEl.innerHTML='<div class="note">Noch keine Produkte. Füge welche links hinzu.</div>'; return } for(const p of products){ const meta=metaOf(p.key); const opened=p.opened_at?`${daysBetween(p.opened_at,new Date())} Tage`:'—'; const pao=paoInfo(p); const paoBadge=pao?`<span class=\"badge ${pao.status==='ok'?'ok':(pao.status==='soon'?'soon':'expired')}\">PAO: ${fmtDate(pao.due)} ${pao.status==='expired'?'(abgelaufen)':pao.status==='soon'?'(bald)':''}</span>`:''; const el=document.createElement('div'); el.className='item'; el.setAttribute('role','listitem'); el.innerHTML=`<div class=\"item-head\"><div><div class=\"item-title\">${p.brand?`${escapeHTML(p.brand)} · `:''}${escapeHTML(p.name)}</div><div class=\"item-sub\">${meta.label} • geöffnet: ${opened} ${paoBadge}</div></div><div class=\"actions\"><button class=\"btn small ghost\" data-act=\"open\">Heute geöffnet</button><button class=\"btn small\" data-act=\"edit\">Bearbeiten</button><button class=\"btn small danger\" data-act=\"del\">Löschen</button></div></div><div class=\"chips\" aria-label=\"Eigenschaften\"><span class=\"chip\">${p.area==='auto'?'auto':p.area}</span><span class=\"chip\">${meta.label}</span><span class=\"chip\">${freqLabel(p.freq)}</span>${p.note?`<span class=\"chip\">${escapeHTML(p.note)}</span>`:''}</div>`; el.querySelector('[data-act="edit"]').addEventListener('click',()=>setForm(p)); el.querySelector('[data-act="del"]').addEventListener('click',()=>{ if(confirm('Löschen?')){ const u=getUser(); u.products=u.products.filter(x=>x.id!==p.id); save(); renderAll(); toast('Gelöscht')}}); el.querySelector('[data-act="open"]').addEventListener('click',()=>{ p.opened_at=todayISO(); save(); renderAll(); toast('Öffnungsdatum gesetzt')}); listEl.appendChild(el); } };
+const freqLabel=f=>f==='daily'?'täglich':f==='2-3x'?'2–3×/Woche':f==='weekly'?'wöchentlich':'nach Bedarf';
+
+/* ===== Routine ===== */
+const filterModeProducts=(mode)=>{ const u=getUser(); if(!u) return []; return u.products.map(p=>({...p, area:inferArea(p), key:p.key||inferKey(p)})).filter(p=>{ const key=p.key||inferKey(p); if(mode.startsWith('face') && p.area!=='face') return false; if(mode.startsWith('hair') && p.area!=='hair') return false; if(!ALLOW_IN_MODE(mode,key)) return false; if(mode!=='hair_wash' && key==='purple') return false; if(mode==='face_pm' && key==='spf') return false; if(mode==='face_am' && key==='retinoid') return false; return true; }); };
+const detectConflicts=(items,mode)=>{ const keys=new Set(items.map(x=>x.key)); const warnings=[]; if(mode==='face_pm' && keys.has('retinoid') && keys.has('exfoliant')) warnings.push('⚠️ Retinoids nicht gemeinsam mit AHA/BHA am selben Abend verwenden.'); if(mode==='face_am' && !keys.has('spf')) warnings.push('☀️ SPF morgens nicht vergessen (2-Finger-Regel).'); return warnings };
+const computePriority=(p,mode)=>{ const meta=metaOf(p.key); let base=meta.pr??999; if(p.key==='serum'){ base=base + serumViscScore(p)/10 } return base };
+const renderRoutine=()=>{ const mode=store.mode; const items=filterModeProducts(mode).sort((a,b)=>{ const ao=MODE_ORDER[mode].indexOf(a.key); const bo=MODE_ORDER[mode].indexOf(b.key); if(ao!==bo) return ao-bo; const ap=computePriority(a,mode), bp=computePriority(b,mode); if(ap!==bp) return ap-bp; return (a.name||'').localeCompare(b.name||'') }); const warns=detectConflicts(items,mode); if(warns.length){ conflictEl.innerHTML=warns.map(w=>`<div>• ${w}</div>`).join(''); conflictEl.classList.remove('hidden') } else conflictEl.classList.add('hidden'); routineEl.innerHTML=''; if(!items.length){ routineEl.innerHTML='<div class="note">Kein passendes Produkt für diesen Modus.</div>'; return } for(const p of items){ const meta=metaOf(p.key); const step=document.createElement('div'); step.className='step'; step.setAttribute('role','listitem'); step.innerHTML=`<div class=\"step-head\"><div><div class=\"step-title\">${escapeHTML(p.name)} <span class=\"badge\">${meta.label}</span></div></div><div class=\"controls\"><label class=\"switch\" title=\"Erledigt markieren\"><span class=\"smalltext\">Done</span><input type=\"checkbox\" aria-label=\"Step erledigt\"></label><button class=\"btn small ghost timer\" data-key=\"${meta.key}\">⏱ Timer</button></div></div><div class=\"step-sub\">${meta.tip}</div>`; step.querySelector('.timer').addEventListener('click',e=>startTimer(e.currentTarget,meta.key)); routineEl.appendChild(step); } };
+const startTimer=(btn,key)=>{ let secs=DURATION_SEC[key]??30; btn.disabled=true; const base='⏱'; const tick=()=>{ btn.textContent=`⏱ ${secs}s`; if(--secs<0){ btn.textContent='✅'; setTimeout(()=>{btn.textContent=base;btn.disabled=false},900); return } setTimeout(tick,1000)}; tick() };
+
+/* ===== Form ===== */
+const form=qs('#productForm');
+const setForm=(p)=>{ qs('#pid').value=p?.id||''; qs('#brand').value=p?.brand||''; qs('#name').value=p?.name||''; qs('#ptype').value=p?.ptype||''; qs('#area').value=p?.area||'auto'; qs('#freq').value=p?.freq||'daily'; qs('#note').value=p?.note||''; qs('#opened_at').value=p?.opened_at?new Date(p.opened_at).toISOString().slice(0,10):''; qs('#pao_months').value=(p?.pao_months??''); form.querySelector('#name').focus() };
+qs('#clearBtn').addEventListener('click',()=>setForm({}));
+form.addEventListener('submit',e=>{ e.preventDefault(); const u=getUser(); if(!u){ toast('Bitte erst einloggen'); return } const p={ id:qs('#pid').value||pid(), brand:(qs('#brand').value||'').trim(), name:(qs('#name').value||'').trim(), ptype:(qs('#ptype').value||'').trim(), area:qs('#area').value||'auto', freq:qs('#freq').value||'daily', note:(qs('#note').value||'').trim(), opened_at:qs('#opened_at').value?new Date(qs('#opened_at').value).toISOString().slice(0,10):undefined, pao_months:qs('#pao_months').value?Number(qs('#pao_months').value):undefined }; if(!p.name){ toast('Name ist erforderlich'); return } p.key=inferKey(p); const uref=getUser(); const idx=uref.products.findIndex(x=>x.id===p.id); if(idx>=0) uref.products[idx]=p; else uref.products.push(p); save(); renderAll(); setForm({}); toast('Gespeichert') });
+
+/* ===== Tabs ===== */
+qsa('[role="tab"]').forEach(tab=>{ tab.addEventListener('click',()=>{ qsa('[role="tab"]').forEach(t=>t.setAttribute('aria-selected','false')); tab.setAttribute('aria-selected','true'); store.mode=tab.dataset.mode; save(); renderRoutine(); }) });
+
+/* ===== Import/Export/ICS/Reset ===== */
+qs('#exportBtn').addEventListener('click',()=>{ const u=getUser(); if(!u){ toast('Bitte erst einloggen'); return } const blob=new Blob([JSON.stringify(u.products,null,2)],{type:'application/json'}); download(blob,`glowflow_products_${(u.profile.email||'user').replace(/[^a-z0-9]/gi,'_')}.json`); toast('Exportiert') });
+const importFile=qs('#importFile');
+qs('#importBtn').addEventListener('click',()=>importFile.click());
+importFile.addEventListener('change',async(e)=>{ const u=getUser(); if(!u){ toast('Bitte erst einloggen'); importFile.value=''; return } const f=e.target.files[0]; if(!f) return; try{ const txt=await f.text(); const arr=JSON.parse(txt); if(!Array.isArray(arr)) throw new Error('Format ungültig'); const normalized=arr.map(x=>{ const id=x.id||pid(); const area=(x.area==='face'||x.area==='hair')?x.area:'auto'; const p={id,brand:x.brand||'',name:String(x.name||'').trim(),ptype:String(x.ptype||'').trim(),area,freq:x.freq||'daily',note:x.note||'',opened_at:x.opened_at?new Date(x.opened_at).toISOString().slice(0,10):undefined,pao_months:x.pao_months?Number(x.pao_months):undefined}; p.key=inferKey(p); return p; }); u.products=normalized; save(); renderAll(); toast('Import erfolgreich') }catch(err){ console.error(err); toast('Import fehlgeschlagen') } importFile.value='' });
+qs('#resetBtn').addEventListener('click',()=>{ if(confirm('Wirklich alles (ALLE Nutzer) löschen?')){ localStorage.removeItem(STORE_KEY); location.reload() }});
+qs('#exportICSBtn').addEventListener('click',()=>{ const u=getUser(); if(!u){ toast('Bitte erst einloggen'); return } download(icsBlob(),'glowflow.ics') });
+
+/* ===== Notifications UI ===== */
+notifToggle.addEventListener('change',async()=>{ const u=getUser(); if(!u){ notifToggle.checked=false; toast('Bitte erst einloggen'); return } if(notifToggle.checked){ if(!('Notification'in window)){ toast('Notifications nicht verfügbar'); notifToggle.checked=false; return } const perm=await Notification.requestPermission(); if(perm!=='granted'){ toast('Erlaubnis abgelehnt'); notifToggle.checked=false; return } u.profile.notifEnabled=true; save(); scheduleNotifs(); toast('Benachrichtigungen aktiv (solange Tab offen)') } else { u.profile.notifEnabled=false; save(); clearNotif(); toast('Benachrichtigungen aus') } });
+
+/* ===== Profile & Header menu ===== */
+qs('#profileBtn').addEventListener('click',()=>{ const expanded=profileMenu.getAttribute('aria-expanded')==='true'; profileMenu.setAttribute('aria-expanded',String(!expanded)) });
+document.addEventListener('click',e=>{ if(!profileMenu.contains(e.target)) profileMenu.setAttribute('aria-expanded','false') });
+qs('#menuProfile').addEventListener('click',()=>openProfile());
+qs('#openProfile').addEventListener('click',()=>openProfile());
+qs('#logoutBtn').addEventListener('click',()=>{ logout(); toast('Abgemeldet') });
+function updateHeaderUser(){ const u=getUser(); const isLogged=!!u; loginOpenBtn.style.display = isLogged ? 'none':'inline-flex'; profileMenu.style.display = isLogged ? 'block':'none'; utilBar.classList.toggle('disabled',!isLogged); if(!isLogged){ notifToggle.checked=false; } if(u){ const initials=(u.profile.name||'?').split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase(); avatarEl.textContent=initials; avatarEl.style.background=u.profile.avatarColor; menuAvatar.textContent=initials; menuAvatar.style.background=u.profile.avatarColor; menuName.textContent=u.profile.name||'—'; menuEmail.textContent=u.profile.email||'—'; notifToggle.checked=!!u.profile.notifEnabled; } }
+
+/* ===== Auth modal ===== */
+const authModal=qs('#authModal'); const authClose=qs('#authClose'); const tabLogin=qs('#tabLogin'); const tabRegister=qs('#tabRegister'); const loginForm=qs('#loginForm'); const regForm=qs('#regForm'); const loginOpen=qs('#loginOpenBtn');
+function openAuth(which='login'){ authModal.setAttribute('open',''); if(which==='login'){ loginForm.classList.remove('hidden'); regForm.classList.add('hidden'); tabLogin.setAttribute('aria-selected','true'); tabRegister.setAttribute('aria-selected','false'); qs('#loginEmail').focus(); } else { regForm.classList.remove('hidden'); loginForm.classList.add('hidden'); tabRegister.setAttribute('aria-selected','true'); tabLogin.setAttribute('aria-selected','false'); qs('#regName').focus(); } }
+function closeAuth(){ authModal.removeAttribute('open') }
+loginOpen.addEventListener('click',()=>openAuth('login'));
+authClose.addEventListener('click',closeAuth);
+tabLogin.addEventListener('click',()=>openAuth('login'));
+tabRegister.addEventListener('click',()=>openAuth('register'));
+loginForm.addEventListener('submit',async e=>{ e.preventDefault(); try{ const email=qs('#loginEmail').value.trim(); const pass=qs('#loginPass').value; await login(email,pass); closeAuth(); toast('Willkommen zurück!'); renderAll(); }catch(err){ toast(err.message||'Login fehlgeschlagen') } });
+qs('#guestBtn').addEventListener('click',()=>{ guestLogin(); closeAuth(); toast('Gastkonto gestartet'); renderAll() });
+regForm.addEventListener('submit',async e=>{ e.preventDefault(); const name=qs('#regName').value.trim(); const email=qs('#regEmail').value.trim(); const p1=qs('#regPass').value; const p2=qs('#regPass2').value; if(p1!==p2){ toast('Passwörter stimmen nicht'); return } try{ await createUser(name,email,p1); closeAuth(); toast('Konto erstellt – willkommen!'); renderAll(); }catch(err){ toast(err.message||'Registrierung fehlgeschlagen') } });
+authModal.addEventListener('cancel',e=>{ e.preventDefault(); closeAuth() });
+
+/* ===== Profile modal ===== */
+const profileModal=qs('#profileModal'); const profileClose=qs('#profileClose'); const profileForm=qs('#profileForm');
+function openProfile(){ const u=getUser(); if(!u){ toast('Bitte einloggen'); return } profileModal.setAttribute('open',''); qs('#profName').value=u.profile.name||''; qs('#profEmail').value=u.profile.email||''; qs('#profSkin').value=u.profile.notes||''; qs('#profNotif').checked=!!u.profile.notifEnabled; qs('#profName').focus(); }
+function closeProfile(){ profileModal.removeAttribute('open') }
+profileClose.addEventListener('click',closeProfile);
+profileModal.addEventListener('cancel',e=>{ e.preventDefault(); closeProfile() });
+profileForm.addEventListener('submit',async e=>{ e.preventDefault(); const u=getUser(); if(!u) return; const newName=qs('#profName').value.trim(); const newEmail=qs('#profEmail').value.trim(); const notes=qs('#profSkin').value.trim(); const notif=qs('#profNotif').checked; const existing=findUserByEmail(newEmail); if(existing && existing[1]!==u){ toast('E-Mail bereits vergeben'); return } const n1=qs('#profNewPass').value; const n2=qs('#profNewPass2').value; if(n1||n2){ if(n1!==n2){ toast('Neue Passwörter stimmen nicht'); return } const salt=uid(); const hash=await sha256(newEmail+':'+n1+':'+salt); u.auth.salt=salt; u.auth.hash=hash; qs('#profNewPass').value=''; qs('#profNewPass2').value=''; }
+ u.profile.name=newName; u.profile.email=newEmail; u.profile.notes=notes; u.profile.notifEnabled=notif; save(); updateHeaderUser(); if(notif){ scheduleNotifs() } else { clearNotif() } toast('Profil gespeichert'); closeProfile(); renderAll(); });
+
+/* ===== Netlify Code Export (aus EINER Datei) ===== */
+const srvModal=qs('#srvModal'); const srvClose=qs('#srvClose');
+qs('#openServerless').addEventListener('click',()=>{ srvModal.setAttribute('open','') });
+srvClose.addEventListener('click',()=>srvModal.removeAttribute('open'));
+srvModal.addEventListener('cancel',e=>{ e.preventDefault(); srvModal.removeAttribute('open') });
+qs('#dlFunction').addEventListener('click',()=>{ const code=qs('#netlify-function-glowflow.mjs').textContent; const blob=new Blob([code],{type:'text/javascript'}); download(blob,'glowflow.mjs'); toast('glowflow.mjs gespeichert') });
+qs('#dlToml').addEventListener('click',()=>{ const el=qs('#netlify-toml'); if(!el){ toast('netlify.toml Block fehlt'); return } const code=el.textContent; const blob=new Blob([code],{type:'text/plain'}); download(blob,'netlify.toml'); toast('netlify.toml gespeichert') });
+
+/* ===== Cloud Sync (Netlify Functions) ===== */
+const apiBase = '/api/glowflow';
+function normalizeProduct(x){ const id=x.id||pid(); const area=(x.area==='face'||x.area==='hair')?x.area:'auto'; const p={id,brand:x.brand||'',name:String(x.name||'').trim(),ptype:String(x.ptype||'').trim(),area,freq:x.freq||'daily',note:x.note||'',opened_at:x.opened_at?new Date(x.opened_at).toISOString().slice(0,10):undefined,pao_months:x.pao_months?Number(x.pao_months):undefined}; p.key=x.key||inferKey(p); return p; }
+async function cloudPull(){ const u=getUser(); if(!u){ toast('Bitte einloggen'); return } if(location.protocol==='file:'){ toast('Cloud Sync benötigt Deployment'); return } try{ const res=await fetch(`${apiBase}?email=${encodeURIComponent(u.profile.email)}`); const js=await res.json(); if(!res.ok) throw new Error(js.error||'Fehler'); const arr=Array.isArray(js.products)?js.products:[]; u.products=arr.map(normalizeProduct); save(); renderAll(); toast(`Cloud Pull: ${arr.length} Produkte`) }catch(e){ console.error(e); toast('Cloud Pull fehlgeschlagen') } }
+async function cloudPush(){ const u=getUser(); if(!u){ toast('Bitte einloggen'); return } if(location.protocol==='file:'){ toast('Cloud Sync benötigt Deployment'); return } try{ const res=await fetch(apiBase,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:u.profile.email,products:u.products})}); const js=await res.json(); if(!res.ok) throw new Error(js.error||'Fehler'); toast(`Cloud Push ok (${js.count||0})`) }catch(e){ console.error(e); toast('Cloud Push fehlgeschlagen') } }
+async function cloudWipe(){ const u=getUser(); if(!u){ toast('Bitte einloggen'); return } if(location.protocol==='file:'){ toast('Cloud Sync benötigt Deployment'); return } if(!confirm('Alle Cloud-Einträge für dieses Konto löschen?')) return; try{ const res=await fetch(apiBase,{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({email:u.profile.email})}); const js=await res.json(); if(!res.ok) throw new Error(js.error||'Fehler'); toast('Cloud Wipe ok') }catch(e){ console.error(e); toast('Cloud Wipe fehlgeschlagen') } }
+const btnPull=qs('#cloudPull'); if(btnPull){ btnPull.addEventListener('click',cloudPull) }
+const btnPush=qs('#cloudPush'); if(btnPush){ btnPush.addEventListener('click',cloudPush) }
+const btnWipe=qs('#cloudWipe'); if(btnWipe){ btnWipe.addEventListener('click',cloudWipe) }
+
+/* ===== Gate ===== */
+function gateLoggedOut(){ const gate=qs('#gate'); const u=getUser(); if(!u){ gate.classList.remove('hidden'); gate.innerHTML=`<div class=\"card\"><h2>Login erforderlich</h2><p>Erstelle ein Konto oder nutze den Gastmodus. <span class=\"badgelite\">Alles in einer Datei</span>. Für Cloud‑DB: Profilmenü → Netlify‑Code exportieren.</p><div class=\"actions\"><button class=\"btn primary\" id=\"gateLogin\">Login</button><button class=\"btn ghost\" id=\"gateGuest\">Gastmodus</button></div></div>`; qs('#appMain').classList.add('disabled'); qs('#gateLogin').addEventListener('click',()=>openAuth('login')); qs('#gateGuest').addEventListener('click',()=>{ guestLogin(); gateLoggedIn(); toast('Gastkonto gestartet'); renderAll(); }); } else { gateLoggedIn() } }
+function gateLoggedIn(){ const gate=qs('#gate'); gate.classList.add('hidden'); qs('#appMain').classList.remove('disabled') }
+
+/* ===== Start ===== */
+function renderAll(){ updateHeaderUser(); renderList(); renderRoutine(); if(getUser()?.profile.notifEnabled) scheduleNotifs(); }
+load(); updateHeaderUser(); if(!getUser()){ gateLoggedOut(); openAuth('login') } else { gateLoggedOut() };
+
+})();
+</script>
+</body>
+</html>
