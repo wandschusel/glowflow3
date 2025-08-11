@@ -14,8 +14,8 @@
     "prismjs": "1.30.0",
     "sharp": "0.34.1",
     "tailwindcss": "4.1.10",
-    "ts-node": "10.9.2",
+    "ts-node": "19.0.2",
     "typescript": "5.8.3",
-      "@netlify/neon": "^0.7.0"
+    "@netlify/neon": "^0.1.0"
   }
 }
