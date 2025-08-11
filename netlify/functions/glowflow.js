@@ -1,6 +1,8 @@
-import { neon } from '@neondatabase/serverless';
-// Pass explicit connection string from Netlify environment
-const sql = neon(process.env.DATABASE_URL); // uses env DATABASE_URL
+iimport { neon } from '@neondatabase/serverless';
+// Use DATABASE_URL if available, else fallback to NETLIFY_DATABASE_URL
+const connectionString = process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL;
+
+const sql = neon(connectionString);
 
 async function ensureSchema(){
   await sql`create table if not exists glowflow_products (
