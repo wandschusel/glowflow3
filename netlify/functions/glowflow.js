@@ -1,8 +1,6 @@
-import { neon } from '@netlify/neon';
-const sql = neon(); // automatically uses env NETLIFY_DATABASE_URL
-
-// Beispielabfrage aus deiner Vorgabe:
-// const [post] = await sql`SELECT * FROM posts WHERE id = ${postId}`;
+import { neon } from '@neondatabase/serverless';
+// Pass explicit connection string from Netlify environment
+const sql = neon(process.env.NETLIFY_DATABASE_URL); // uses env NETLIFY_DATABASE_URL
 
 async function ensureSchema(){
   await sql`create table if not exists glowflow_products (
@@ -38,8 +36,8 @@ export const handler = async (event) => {
         const id = String(p.id || (globalThis.crypto?.randomUUID?.() || `p_${Date.now()}_${Math.random().toString(36).slice(2)}`));
         p.id = id;
         await sql`insert into glowflow_products (id, user_email, data, updated_at)
-                      values (${id}, ${email}, ${sql.json(p)}, ${now})
-                      on conflict (id) do update set data = excluded.data, updated_at = excluded.updated_at`;
+                  values (${id}, ${email}, ${sql.json(p)}, ${now})
+                  on conflict (id) do update set data = excluded.data, updated_at = excluded.updated_at`;
       }
       return json(200, { ok: true, count: products.length });
     }
