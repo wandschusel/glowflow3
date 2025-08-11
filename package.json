@@ -1,20 +1,8 @@
 {
+  "name": "glowflow",
+  "private": true,
+  "type": "module",
   "dependencies": {
-    "@fortawesome/fontawesome-free": "6.7.2",
-    "@fortawesome/fontawesome-svg-core": "6.7.2",
-    "@fortawesome/free-brands-svg-icons": "6.7.2",
-    "@fortawesome/free-regular-svg-icons": "6.7.2",
-    "@fortawesome/free-solid-svg-icons": "6.7.2",
-    "@types/prismjs": "1.26.5",
-    "autoprefixer": "10.4.2",
-    "http-server": "14.1.1",
-    "image-size": "2.0.2",
-    "postcss": "8.6.0",
-    "pptxgenjs": "4.0.0",
-    "prismjs": "1.30.0",
-    "sharp": "0.34.1",
-    "tailwindcss": "4.1.10",
-    "typescript": "5.8.3",
     "@neondatabase/serverless": "^1.0.1"
   }
 }
